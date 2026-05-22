@@ -6,25 +6,6 @@ The project explores four classical NLP feature representations as baselines, th
 
 ---
 
-## Repository Structure
-
-```
-fake-news-detection/
-├── data/                          # Raw and intermediate data (not committed)
-│   └── WELFake_Dataset.csv        # Download from Kaggle and place here
-├── notebooks/
-│   ├── 01_preprocessing.ipynb     # Punctuation removal → stopwords → lemmatisation
-│   ├── 02_feature_engineering.ipynb  # TF-IDF, Word2Vec, Sentence2Vec, Doc2Vec + baselines
-│   └── 03_bert_finetune.ipynb     # BERT fine-tuning and inference
-├── src/
-│   ├── preprocessing.py           # Reusable text-cleaning functions
-│   └── vectorizers.py             # Reusable feature-engineering functions
-├── requirements.txt
-└── README.md
-```
-
----
-
 ## Pipeline Overview
 
 ```
@@ -71,12 +52,10 @@ cd fake-news-detection
 pip install -r requirements.txt
 ```
 
-Download the WELFake dataset from Kaggle and place `WELFake_Dataset.csv` in the `data/` folder.
-
 Then run the notebooks in order:
 1. `01_preprocessing.ipynb`
 2. `02_feature_engineering.ipynb`
-3. `03_bert_finetune.ipynb` *(requires GPU for reasonable runtime)*
+3. `03_bert_finetune.ipynb` 
 
 ---
 
