@@ -1,0 +1,20 @@
+# Core data / ML
+numpy>=1.26
+pandas>=2.0
+scikit-learn>=1.4
+
+# NLP - classical
+nltk>=3.9
+gensim>=4.3
+
+# Visualisation
+matplotlib>=3.8
+seaborn>=0.13
+
+# NLP - deep learning (Notebook 3 only)
+torch>=2.2
+transformers>=4.40
+
+# Notebook runtime
+jupyter>=1.1
+ipykernel>=6.0

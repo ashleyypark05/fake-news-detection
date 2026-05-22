@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fake News Detection — NLP Classification</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:      #1a1a2e;
+    --mid:      #4a4a6a;
+    --light:    #8888aa;
+    --rule:     #e0e0ec;
+    --accent:   #2563eb;
+    --accent2:  #16a34a;
+    --warn:     #d97706;
+    --neg:      #dc2626;
+    --bg:       #fafaf8;
+    --card:     #ffffff;
+    --serif:    'DM Serif Display', Georgia, serif;
+    --sans:     'DM Sans', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 17px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 0 28px 80px;
+  }
+
+  header {
+    padding: 40px 0 5px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 40px;
+  }
+
+  .label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: 2.4rem;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 12px;
+    max-width: 620px;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: var(--mid);
+    font-weight: 300;
+    font-style: italic;
+    margin-bottom: 20px;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  .meta {
+    font-size: 0.85rem;
+    color: var(--light);
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .abstract {
+    background: var(--card);
+    border-left: 3px solid var(--accent);
+    padding: 24px 28px;
+    margin-bottom: 48px;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.95rem;
+    color: var(--mid);
+    line-height: 1.8;
+  }
+
+  nav.toc {
+    margin-bottom: 56px;
+    padding: 24px 28px;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+  }
+
+  nav.toc h3 {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--light);
+    margin-bottom: 14px;
+  }
+
+  nav.toc ol { list-style: none; counter-reset: toc; padding: 0; }
+
+  nav.toc li {
+    counter-increment: toc;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 0.9rem;
+  }
+  nav.toc li:last-child { border-bottom: none; }
+
+  nav.toc a {
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  nav.toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  nav.toc a:hover { color: var(--accent); }
+
+  section {
+    margin-bottom: 60px;
+    scroll-margin-top: 24px;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 1.65rem;
+    color: var(--ink);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin: 28px 0 10px;
+  }
+
+  p { margin-bottom: 16px; }
+
+  .rq-box {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+
+  .rq-primary {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--ink);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  .rq-list {
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+    padding-top: 14px;
+    margin: 0;
+  }
+
+  .rq-list li {
+    padding: 6px 0 6px 20px;
+    position: relative;
+    font-size: 0.92rem;
+    color: var(--mid);
+  }
+
+  .rq-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 0.8rem;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 24px 0;
+  }
+
+  .stat-row.four { grid-template-columns: repeat(4, 1fr); }
+  .stat-row.two  { grid-template-columns: repeat(2, 1fr); }
+
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 1.8rem;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-num.pos  { color: var(--accent2); }
+  .stat-num.warn { color: var(--warn); }
+  .stat-num.neg  { color: var(--neg); }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 0.88rem;
+  }
+
+  thead tr { border-bottom: 2px solid var(--ink); }
+
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) td { background: #f7f7fb; }
+
+  td.pos  { color: var(--accent2); font-weight: 500; }
+  td.neg  { color: var(--neg);     font-weight: 500; }
+  td.warn { color: var(--warn);    font-weight: 500; }
+  td.dim  { color: var(--light); }
+  td.bold { font-weight: 500; }
+
+  .finding {
+    background: var(--card);
+    border-left: 3px solid var(--accent2);
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.92rem;
+    color: var(--mid);
+  }
+
+  .finding.warn  { border-left-color: var(--warn); }
+  .finding.alert { border-left-color: var(--neg); }
+
+  .finding strong {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 6px;
+  }
+
+  .finding.warn strong  { color: var(--warn); }
+  .finding.alert strong { color: var(--neg); }
+
+  .pipeline {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-size: 0.85rem;
+  }
+
+  .pipeline-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .pipeline-step:last-child { border-bottom: none; }
+
+  .step-num {
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-body strong { display: block; color: var(--ink); font-weight: 500; }
+  .step-body span   { color: var(--mid); }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.83em;
+    background: #f0f0f8;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--ink);
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.8rem;
+    color: var(--light);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.8rem; }
+    .stat-row, .stat-row.four { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Fake News Detection</h1>
+    <p class="subtitle">Comparing Classical and Transformer-Based Approaches to Misinformation Classification</p>
+  </header>
+
+  <div class="abstract">
+    This project benchmarks four text representation strategies for binary fake news classification on the WELFake dataset (~72,000 labeled news articles). Classical approaches — TF-IDF, Word2Vec, Doc2Vec, and Sentence2Vec — are evaluated as logistic regression baselines before a fine-tuned BERT model is trained as the upper-bound benchmark. TF-IDF achieves the strongest baseline at 94.2% accuracy, outperforming all embedding-based approaches under logistic regression. BERT fine-tuning is expected to push above 95%, at the cost of substantially greater compute. The project frames this as a practical trade-off analysis: when does the complexity of a transformer model justify the accuracy gain over a well-tuned classical baseline?
+  </div>
+
+  <nav class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#intro">Introduction &amp; Research Questions</a></li>
+      <li><a href="#data">Dataset &amp; Preprocessing</a></li>
+      <li><a href="#features">Feature Engineering</a></li>
+      <li><a href="#baselines">Baseline Model Results</a></li>
+      <li><a href="#bert">BERT Fine-Tuning</a></li>
+      <li><a href="#discussion">Discussion</a></li>
+      <li><a href="#limits">Limitations &amp; Future Work</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1. Intro -->
+  <section id="intro">
+    <h2>1. Introduction &amp; Research Questions</h2>
+    <p>The spread of misinformation through online news platforms has become a measurable social problem. Automated detection systems can serve as one layer of a content moderation pipeline — not as a sole arbiter, but as a scalable first-pass filter. The central challenge is choosing the right representation: does the semantic richness of a transformer model meaningfully outperform simpler frequency-based features, or does TF-IDF capture enough surface-level signal to be sufficient for practical deployment?</p>
+
+    <div class="rq-box">
+      <p class="rq-primary">"Across classical and transformer-based text representations, which approach best balances classification accuracy and computational cost for large-scale fake news detection?"</p>
+      <ul class="rq-list">
+        <li><strong>Baseline comparison</strong> &mdash; How do TF-IDF, Word2Vec, Doc2Vec, and Sentence2Vec compare under a consistent logistic regression classifier?</li>
+        <li><strong>Transformer ceiling</strong> &mdash; What accuracy gain does BERT fine-tuning provide over the best classical baseline?</li>
+        <li><strong>Practical trade-off</strong> &mdash; Is the compute cost of BERT justifiable given the marginal accuracy improvement over TF-IDF?</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2. Data -->
+  <section id="data">
+    <h2>2. Dataset &amp; Preprocessing</h2>
+    <p>The WELFake dataset combines four existing fake news datasets (Kaggle, McIntire, Reuters, BuzzFeed Political) into a single labeled corpus. It contains approximately 72,134 articles split roughly evenly between real and fake labels, making class imbalance a non-issue for baseline modeling.</p>
+
+    <div class="stat-row four">
+      <div class="stat"><div class="stat-num">72K</div><div class="stat-label">Total articles</div></div>
+      <div class="stat"><div class="stat-num">~50%</div><div class="stat-label">Fake label share</div></div>
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">Source datasets merged</div></div>
+      <div class="stat"><div class="stat-num">~150MB</div><div class="stat-label">Raw data size</div></div>
+    </div>
+
+    <h3>Preprocessing Pipeline</h3>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>Stopword removal</strong>
+          <span>Standard English stopwords removed using NLTK. Custom additions for news-specific noise (e.g. dateline markers, wire service tags).</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>Lemmatization</strong>
+          <span>WordNetLemmatizer applied after POS tagging to reduce tokens to base forms. Preserves semantic meaning better than stemming for downstream embedding models.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>Punctuation removal</strong>
+          <span>Non-alphanumeric characters stripped. URLs and email addresses removed prior to tokenization.</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>Train/test split</strong>
+          <span>80/20 stratified split applied consistently across all models to ensure comparable evaluation. Random state fixed for reproducibility.</span>
+        </div>
+      </div>
+    </div>
+
+    <p>The preprocessing logic is consolidated in <code>src/preprocessing.py</code>, which exposes a single <code>clean_text()</code> function used uniformly across all notebooks.</p>
+  </section>
+
+  <!-- 3. Features -->
+  <section id="features">
+    <h2>3. Feature Engineering</h2>
+    <p>Four distinct text representation strategies were implemented and evaluated. Each represents a different assumption about what makes text meaningful for classification.</p>
+
+    <h3>TF-IDF</h3>
+    <p>Term Frequency&ndash;Inverse Document Frequency produces a sparse, high-dimensional feature matrix weighted by how distinctive a term is across the corpus. No semantic relationships are encoded — words are treated as independent signals. Implemented with <code>sklearn.TfidfVectorizer</code> with unigram and bigram features.</p>
+
+    <h3>Word2Vec</h3>
+    <p>A shallow neural network trained on the corpus to produce dense 100-dimensional word embeddings. Document-level representations are produced by averaging the word vectors for each article. Captures local semantic relationships (synonyms, analogies) but loses document structure in the averaging step.</p>
+
+    <h3>Doc2Vec</h3>
+    <p>An extension of Word2Vec that learns document-level embeddings directly, preserving more structural context than averaged Word2Vec. Trained using the PV-DM architecture with 100-dimensional vectors over 40 epochs.</p>
+
+    <h3>Sentence2Vec (Sentence Transformers)</h3>
+    <p>Pre-trained sentence transformer embeddings (<code>all-MiniLM-L6-v2</code>) producing 384-dimensional dense vectors. Unlike the other embedding approaches, Sentence2Vec is not trained on the WELFake corpus — it uses transfer learning from a large general-purpose model. This makes it the most semantically rich of the classical baselines but also the most computationally expensive to encode.</p>
+
+    <p>All four representations are implemented in <code>src/vectorizers.py</code> with a consistent interface.</p>
+  </section>
+
+  <!-- 4. Baselines -->
+  <section id="baselines">
+    <h2>4. Baseline Model Results</h2>
+    <p>All four feature representations were evaluated under logistic regression (L2 regularization, <code>max_iter=1000</code>) on the same 80/20 stratified split. Accuracy is the primary metric given balanced classes; F1 scores are consistent with accuracy results.</p>
+
+    <table>
+      <thead>
+        <tr><th>Representation</th><th>Classifier</th><th>Accuracy</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="bold">TF-IDF</td>
+          <td class="dim">Logistic Regression</td>
+          <td class="pos">94.2%</td>
+          <td class="dim">Best baseline; sparse but highly discriminative</td>
+        </tr>
+        <tr>
+          <td class="bold">Word2Vec</td>
+          <td class="dim">Logistic Regression</td>
+          <td class="warn">91.1%</td>
+          <td class="dim">Averaging loses document structure</td>
+        </tr>
+        <tr>
+          <td class="bold">Doc2Vec</td>
+          <td class="dim">Logistic Regression</td>
+          <td class="warn">89.7%</td>
+          <td class="dim">Underperforms Word2Vec; may need more epochs</td>
+        </tr>
+        <tr>
+          <td class="bold">Sentence2Vec</td>
+          <td class="dim">Logistic Regression</td>
+          <td class="neg">78.0%</td>
+          <td class="dim">General-purpose model; not domain-adapted</td>
+        </tr>
+        <tr>
+          <td class="bold">BERT (fine-tuned)</td>
+          <td class="dim">Classification head</td>
+          <td class="pos">~95%+</td>
+          <td class="dim">Expected; training in progress</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="finding">
+      <strong>TF-IDF Dominates Classical Baselines</strong>
+      TF-IDF outperforms all three embedding-based approaches under logistic regression by 3–16 percentage points. This is consistent with the broader NLP literature: for binary classification tasks with sufficient labeled data, lexical features often dominate over semantic embeddings when the classifier is simple. Fake news articles tend to have distinctive surface-level vocabulary patterns that TF-IDF captures effectively.
+    </div>
+
+    <div class="finding warn">
+      <strong>Sentence2Vec Underperformance</strong>
+      The Sentence2Vec result (78.0%) is notably lower than expected for a pre-trained transformer embedding. The likely cause is domain mismatch — <code>all-MiniLM-L6-v2</code> was trained on general-purpose sentence similarity tasks, not news classification. Fine-tuning a sentence transformer on this corpus would likely close the gap substantially.
+    </div>
+  </section>
+
+  <!-- 5. BERT -->
+  <section id="bert">
+    <h2>5. BERT Fine-Tuning</h2>
+    <p>The final stage fine-tunes <code>bert-base-uncased</code> on the WELFake training set with a binary classification head. This serves as the performance ceiling benchmark — the question being whether the ~3 percentage point gain over TF-IDF justifies the orders-of-magnitude increase in compute and model complexity.</p>
+
+    <h3>Training Configuration</h3>
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Base model</td><td class="dim">bert-base-uncased</td></tr>
+        <tr><td>Max sequence length</td><td class="dim">512 tokens</td></tr>
+        <tr><td>Batch size</td><td class="dim">16</td></tr>
+        <tr><td>Learning rate</td><td class="dim">2e-5</td></tr>
+        <tr><td>Epochs</td><td class="dim">3</td></tr>
+        <tr><td>Optimizer</td><td class="dim">AdamW with linear warmup</td></tr>
+        <tr><td>Device support</td><td class="dim">CUDA / MPS (Apple Silicon) / CPU</td></tr>
+      </tbody>
+    </table>
+
+    <p>Model weights are saved to <code>bert-finetuned/</code> after training and excluded from version control via <code>.gitignore</code>. Expected accuracy: 95%+, consistent with published BERT results on similar fake news benchmarks.</p>
+  </section>
+
+  <!-- 6. Discussion -->
+  <section id="discussion">
+    <h2>6. Discussion</h2>
+
+    <h3>The TF-IDF Ceiling Problem</h3>
+    <p>The strongest result in this study — TF-IDF at 94.2% — raises an important practical question: at what point does additional model complexity stop being justified? For a production content moderation system processing millions of articles daily, TF-IDF with logistic regression is orders of magnitude faster to train, simpler to deploy, and easier to inspect than a fine-tuned BERT model.</p>
+    <p>The ~3 percentage point gap between TF-IDF and expected BERT performance translates to roughly 2,000 additional correctly classified articles per 72,000. Whether this matters depends entirely on the downstream cost of misclassification — a high-stakes moderation system would value the gain; a low-stakes research filter might not.</p>
+
+    <h3>Why Embeddings Underperform Here</h3>
+    <p>The embedding-based approaches (Word2Vec, Doc2Vec, Sentence2Vec) all underperform TF-IDF under logistic regression for a predictable reason: fake news detection at the article level is heavily lexical. Fake articles tend to use specific vocabulary patterns — emotionally charged language, specific source citations that real news doesn't use, particular syntactic constructions. TF-IDF captures exactly these surface signals. Semantic embeddings smooth over precisely the features that are most discriminative.</p>
+
+    <div class="finding">
+      <strong>Practical Recommendation</strong>
+      For production deployment, a TF-IDF + logistic regression pipeline offers the best balance of accuracy, speed, and interpretability. BERT fine-tuning is the right choice when accuracy above 94% is a hard requirement, compute is available, and explainability is less critical. The two approaches are complementary, not competitive — BERT can serve as a second-pass filter on articles that TF-IDF classifies with low confidence.
+    </div>
+  </section>
+
+  <!-- 7. Limits -->
+  <section id="limits">
+    <h2>7. Limitations &amp; Future Work</h2>
+
+    <p><strong>Dataset composition.</strong> WELFake merges four datasets with different collection methodologies and time periods. Models trained on this corpus may not generalize to news from different domains, languages, or platforms.</p>
+
+    <p><strong>Binary framing.</strong> Real-world misinformation exists on a spectrum — partially false, misleading framing, out-of-context imagery. A binary real/fake label collapses this nuance and may incentivize models to pick up on surface artifacts of the labeling process rather than genuine misinformation signals.</p>
+
+    <p><strong>Doc2Vec underperformance.</strong> The Doc2Vec result (89.7%) may improve with longer training (more epochs, larger vector size). The current configuration was chosen for speed; a full hyperparameter sweep could close the gap with Word2Vec.</p>
+
+    <p><strong>Future work.</strong> Natural extensions include: (1) replacing Sentence2Vec with a news-domain fine-tuned sentence transformer; (2) adding metadata features (publication source, publication date, article length) to the classical pipelines; (3) evaluating on a held-out temporal split to test generalization over time; (4) exploring RoBERTa or DeBERTa as alternatives to BERT-base.</p>
+  </section>
+
+  <footer>
+    <span>Fake News Detection &mdash; NLP Classification</span>
+    <span><a href="https://github.com/ashleyypark05/fake-news-detection">github.com/ashleyypark05/fake-news-detection</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
