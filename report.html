@@ -375,7 +375,7 @@
   </header>
 
   <div class="abstract">
-    This project benchmarks four text representation strategies for binary fake news classification on the WELFake dataset (~72,000 labeled news articles). Classical approaches — TF-IDF, Word2Vec, Doc2Vec, and Sentence2Vec — are evaluated as logistic regression baselines before a fine-tuned BERT model is trained as the upper-bound benchmark. TF-IDF achieves the strongest baseline at 94.2% accuracy, outperforming all embedding-based approaches under logistic regression. BERT fine-tuning is expected to push above 95%, at the cost of substantially greater compute. The project frames this as a practical trade-off analysis: when does the complexity of a transformer model justify the accuracy gain over a well-tuned classical baseline?
+    This project benchmarks four text representation strategies for binary fake news classification on the WELFake dataset (~72,000 labeled news articles). Classical approaches — TF-IDF, Word2Vec, Doc2Vec, and Sentence2Vec — are evaluated as logistic regression baselines before a fine-tuned BERT model is trained as the upper-bound benchmark. TF-IDF achieves the strongest baseline at 94.2% accuracy, outperforming all embedding-based approaches under logistic regression. BERT fine-tuning is expected to push above 98%, at the cost of substantially greater compute. The project frames this as a practical trade-off analysis: when does the complexity of a transformer model justify the accuracy gain over a well-tuned classical baseline?
   </div>
 
   <nav class="toc">
@@ -510,7 +510,7 @@
         <tr>
           <td class="bold">BERT (fine-tuned)</td>
           <td class="dim">Classification head</td>
-          <td class="pos">~95%+</td>
+          <td class="pos">~98%+</td>
           <td class="dim">Expected; training in progress</td>
         </tr>
       </tbody>
@@ -548,7 +548,7 @@
       </tbody>
     </table>
 
-    <p>Model weights are saved to <code>bert-finetuned/</code> after training and excluded from version control via <code>.gitignore</code>. Expected accuracy: 95%+, consistent with published BERT results on similar fake news benchmarks.</p>
+    <p>Model weights are saved to <code>bert-finetuned/</code> after training and excluded from version control via <code>.gitignore</code>. Expected accuracy: 98%+, consistent with published BERT results on similar fake news benchmarks.</p>
   </section>
 
   <!-- 6. Discussion -->
