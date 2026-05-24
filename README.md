@@ -75,3 +75,9 @@ Then run the notebooks in order:
 - **One vectorizer module** (`src/vectorizers.py`) replaces four separate files. Each representation is a single function call.
 - **Consistent data paths** — all notebooks read from and write to `data/` relative to the repo root.
 - **Baseline comparison in Notebook 2** — logistic regression on each representation gives an apples-to-apples view before committing to BERT.
+
+---
+
+## Acknowledgements
+
+Team capstone project — Duke Applied Machine Learning Group, Fall 2025.
