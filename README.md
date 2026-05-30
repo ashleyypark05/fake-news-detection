@@ -38,7 +38,7 @@ WELFake_Dataset.csv
 | Logistic Regression | Word2Vec | ~0.87 |
 | Logistic Regression | Sentence2Vec | ~0.88 |
 | Logistic Regression | Doc2Vec | ~0.89 |
-| **BERT fine-tuned** | Contextual embeddings | **~0.97+** |
+| **BERT fine-tuned** | Contextual embeddings | **~0.98+** |
 
 > Results are approximate; exact figures depend on random seeds and training duration.
 
